@@ -1,36 +1,24 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Simple IoT Backend - Sensor Data MQTT Adaptor
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A microservice for simple iot backend handling incoming sensors data from MQTT broker.
+
+## Requirements
+
+1. Node.js (version >= 16)
+2. MQTT Broker
+
 
 ## Project setup
 
-```bash
-$ npm install
-```
+1. Clone this project and install node.js packages
+
+    ```bash
+    $ npm install
+    ```
+
+2. Update environment variables in `.env.development.local` (Dev) or `.env` (Prod)
 
 ## Compile and run the project
 
@@ -50,36 +38,45 @@ $ npm run start:prod
 ```bash
 # unit tests
 $ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
 
-## Resources
+## Docker
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+docker build -t simple-iot-sensor-data-mqtt-adaptor:{tag} .
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## MQTT
 
-## Support
+This application allows sending sensor data to an MQTT broker using the topic format:   `data/{deviceId}/{topic}`  
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Access/Login to MQTT Broker
+To access or log in to the MQTT broker:  
+1. Use the same username and password as registered in the `[POST]/users` endpoint.  
+2. If you want to use a separate MQTT password, send a `PATCH` request to the endpoint `/users/mqtt/password` with the new password in the request body.  
 
-## Stay in touch
+**Note**: Setting a separate MQTT password will disallow logging in to the MQTT broker with your base password.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Payload Format
+The payload must be a JSON object containing the following:  
+- `username`: Your registered username (string).  
+- `value`: The data value you want to send (number).  
 
-## License
+### Example
+To update the `temp` topic for a device with ID `4`, you can send:  
+```json
+{
+  "username": "your_username",
+  "value": 5
+}
+```
+Using the topic: `data/4/temp`  
+This will update the value `5` for the `temp` topic of device ID `4`.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Important Note
+
+1. You can only update the value of a device ID and topic that you own or have registered.
+2. The `username` in the payload is required to verify ownership of the device and topic.
+
+### Future Update
+The requirement for including username in the payload will be removed in an upcoming update.
